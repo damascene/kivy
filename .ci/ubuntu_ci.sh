@@ -146,9 +146,7 @@ install_manylinux_build_deps() {
   # ThorVG (kivy.lib.thorvg wrapper) builds via meson; the yum-shipped
   # meson on manylinux2014 is too old for ThorVG 1.0.x, so pin a recent
   # version through pip.
-  python3 -m ensurepip --upgrade || true
-  python3 -m pip install --upgrade pip
-  python3 -m pip install --upgrade meson
+  pipx install "meson==1.11.1"
 }
 
 install_ubuntu_build_deps() {
