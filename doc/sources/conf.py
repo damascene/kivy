@@ -14,10 +14,14 @@
 # serve to show the default value.
 
 from datetime import datetime
-import configparser
 import os
 import sphinx
 import sys
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
 
 # If your extensions are in another directory, add it here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
@@ -33,8 +37,7 @@ sys.path.insert(0, os.path.dirname(base_dir))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     'autodoc', 'sphinx.ext.todo', 'preprocess', 'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode', 'sphinx.ext.mathjax', 'sphinx.ext.extlinks',
-    'sphinxcontrib.jquery']
+    'sphinx.ext.viewcode', 'sphinx.ext.mathjax', 'sphinx.ext.extlinks']
 
 if sphinx.version_info[0] >= 4:
     # In 4.0 and above has been added the support to substitute by ‘%s’ in the caption.
@@ -229,14 +232,16 @@ latex_toplevel_sectioning = 'part'
 # If false, no module index is generated.
 # latex_use_modindex = True
 
-config_parser = configparser.ConfigParser()
-config_parser.read(os.path.join(base_dir, '..', '..', 'setup.cfg'))
+with open(
+    os.path.join(base_dir, '..', '..', 'pyproject.toml'), 'rb'
+) as fileh:
+    kivy_config = tomllib.load(fileh)['tool']['kivy']
 
 # if used in a code-block, the block has to be marked with
 # .. parse-literal::, otherwise it won't be replaced
 # !!! doesn't work for "::", ".. code::" or ".. code-block::"
-python_versions = config_parser['kivy']['python_versions'].strip()
-cython_max_version = config_parser['kivy']['cython_max'].strip()
+python_versions = kivy_config['python_versions'].strip()
+cython_max_version = kivy_config['cython_max'].strip()
 replacements = {
     'python_versions': python_versions,
     'kivy_version': kivy.__version__,
@@ -252,3 +257,7 @@ for key, value in replacements.items():
     epilog.append(rep)
 
 rst_epilog = '\n'.join(epilog)
+
+def setup(app):
+    # Register the custom theme scripts so Sphinx includes them via {{ js_tag() }}
+    app.add_js_file('kivy.js')
